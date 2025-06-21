@@ -1,5 +1,25 @@
+#############################-#################
+###########################    \###############
+###########################         \##########
+########################-            \#########
+#######################/              #########
+######################-                ########
+######################/                ########
+#######################/\              ########
+#########################\             ########
+##########################/            ########
+##############-############            ########
+############/    \#########          ///#######
+############      #######            ##########
+############         \\\-            ##########
+#############/\                       #########
+###############/                      # #######
+##############-                       #########
+##############                         \#######
+
+
 # BASIC VID2ASCII
-An extremely primitive C++ "program" which makes use of OpenCV to create an ASCII art version of each frame of a video, primarily designed for and tested with the Bad Apple music video.
+An extremely primitive C++ "program" which makes use of OpenCV to create an ASCII art version of each frame of a **black and white** video, primarily designed for and tested with the Bad Apple music video.
 Created with VS2022 on a Windows 10 machine. No idea if it functions at all on any other OS.
 ## Usage
 Use a command-line interface. Pass the location of your video file as an argument.

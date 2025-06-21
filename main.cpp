@@ -4,10 +4,32 @@
 #include <stdlib.h>
 #include <thread>
 
+//used to decide what character to place in a white tile
+//based on the gradient of the change in colours
+char decideWhiteCharacter(int _diffY, int _diffX) {
+	int gradient = _diffY / (_diffX+1);
+	if ((_diffY == 0 && _diffX == 0) || gradient == 0)
+		return '#';
+	else if (_diffY == 0 && _diffX > 0)
+		return '|';
+	else if (_diffY > 0 && _diffX == 0)
+		return '-';
+	else if (gradient > 0)
+		return '\\'; //'/'
+	else if (gradient < 0)
+		return '/';//'\\'
+	else
+		printf("\nWEIRD GRADIENT!!"); //TODO: check someday whether or not im correctly calculating the gradient and whether im subtracting the incorrect values or not. it seems to work perfectly fine so idk. someone else will probably test it and find out themselves eventually
+}
+
 int main(int argc, char* argv[]) {
 
 	using namespace std::chrono_literals;
 
+#ifdef _DEBUG
+	//we dont need to pass a file location for quick testing. makes it easier to test in vs
+	cv::VideoCapture video = cv::VideoCapture("C:\\Users\\mishu\\Desktop\\My Python Applications\\VID2ASCII\\badapple.mp4");
+#else
 	if (argv[1] == NULL) {
 		printf("\n You need to pass the location of your desired video file as an argument when running the program in a terminal!\n");
 		return -1;
@@ -24,7 +46,9 @@ int main(int argc, char* argv[]) {
 		printf("\n You need to pass the location of your desired video file as an argument when running the program in a terminal!\n");
 		return -1;
 	}
+#endif
 
+	int fps = video.get(cv::CAP_PROP_FPS);
 	int currentFrame = 0;
 	while (video.isOpened()) {;
 
@@ -59,7 +83,16 @@ int main(int argc, char* argv[]) {
 			for (j = i-disPerCol; j > i - sizeOfRow; j-=disPerCol) {
 				int totalColours = 0;//the total values of all the colours we iterated over
 				int amtOfColours = 0;//how many colours we iterated over
+				int changeX = 0;
+				//get average change in x colours in all rows
+				for (k = j; k > j - disPerRow; k-=sizeOfRow) {
+					changeX += image.ptr(0)[k + disPerCol - 1] - image.ptr(0)[j];
+				}
+				changeX /= 20;
+				changeX -= changeX % 100;
+				int changeY = 0;
 				for (k = j; k < j+disPerCol; k++) { //iterates over 10 collumns
+					changeY += image.ptr(0)[k-disPerRow+sizeOfRow]-image.ptr(0)[k]; //get average change in y colours in all collumns
 					totalColours += image.ptr(0)[k];
 					amtOfColours++;
 					for (l = k; l > k-disPerRow; l-=sizeOfRow) { //iterates over 20 rows
@@ -67,7 +100,9 @@ int main(int argc, char* argv[]) {
 						amtOfColours++;
 					}
 				}
-				if (totalColours/amtOfColours > 125) finalImage[start - ((i - j) / disPerCol)] = '-';
+				changeY /= 10;
+				changeY -= changeY % 100;
+				if (totalColours/amtOfColours > 125) finalImage[start - ((i - j) / disPerCol)] = decideWhiteCharacter(changeY,changeX);
 				else finalImage[start - ((i - j) / disPerCol)] = ' ';
 			}
 		}
@@ -76,7 +111,7 @@ int main(int argc, char* argv[]) {
 		free(finalImage);
 		
 		currentFrame++;
-		std::this_thread::sleep_for(30ms - (std::chrono::high_resolution_clock::now() - startTime));
+		std::this_thread::sleep_for((1ms*fps) - (std::chrono::high_resolution_clock::now() - startTime));
 	}
 
 	video.release();
